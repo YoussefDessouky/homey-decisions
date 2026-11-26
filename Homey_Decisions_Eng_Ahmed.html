@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Homey: قرارات محتاجة رأيك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8f7f3;--card:#fff;--ink:#141414;--mute:#6b6760;--line:#e6e2d8;--gold:#b8892f;--goldsoft:#f4ead6}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 Cairo,"Segoe UI",Tahoma,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:clamp(20px,4vw,48px) max(4vw,16px)}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.25;margin:0 0 8px;font-weight:800}
+h2{font-size:23px;margin:32px 0 12px;font-weight:800;display:flex;align-items:center;gap:10px}
+h2::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--gold)}
+.lead{color:var(--mute);margin:0 0 16px;max-width:70ch}
+.meter{display:flex;align-items:center;gap:14px;background:var(--ink);color:#fff;border-radius:14px;padding:12px 18px;position:sticky;top:10px;z-index:2}
+.meter b{font-size:30px;color:var(--gold);font-weight:800}
+.bar{flex:1;height:8px;background:#333;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+.item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:12px}
+.item.done{border-color:var(--gold)}
+.item h3{margin:0;font-size:19px}
+.ctx{color:var(--mute);font-size:15px;margin:4px 0 8px}
+.links{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.links a{font-size:14px;font-weight:700;color:var(--ink);background:var(--goldsoft);border-radius:20px;padding:6px 14px;text-decoration:none}
+.links a:focus-visible{outline:2px solid var(--gold)}
+.yp{font-size:14px;background:var(--goldsoft);border-radius:10px;padding:8px 12px;margin-bottom:10px}
+.yp b{color:#7a5a17}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;min-height:44px}
+.opt input{width:20px;height:20px;margin-top:4px;accent-color:var(--ink);flex:none}
+.opt.sel{background:var(--goldsoft);border-color:var(--gold)}
+.opt span{flex:1}.opt small{display:block;color:var(--mute);font-size:14px}
+.tagY{font-size:12px;font-weight:700;border-radius:20px;padding:1px 9px;background:var(--ink);color:#fff;margin-inline-start:6px}
+.note{margin-top:10px;width:100%;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--bg)}
+button{font:inherit;font-weight:700;border-radius:10px;border:1px solid var(--ink);background:var(--ink);color:#fff;padding:10px 16px;min-height:44px;cursor:pointer}
+button.ghost{background:transparent;color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+textarea{width:100%;min-height:240px;font:15px/1.7 Cairo,Tahoma,sans-serif;border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card);color:var(--ink)}
+.small{font-size:14px;color:var(--mute)}
+@media(prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style></head><body><div class="wrap">
+<h1>أهلاً يا بشمهندس أحمد، دي القرارات اللي محتاجة رأي حضرتك</h1>
+<p class="lead">13 نقطة قبل الإطلاق. في كل نقطة مكتوب اختيار يوسف المبدئي. لو موافق اضغط "موافق على اختيار يوسف"، أو اختار حاجة تانية واكتب ملاحظة. وفي الآخر اضغط "ابعت ليوسف على واتساب".</p>
+<div class="btns"><button id="agreeAll">موافق على كل اختيارات يوسف</button></div>
+<div class="meter" aria-live="polite"><b id="n">0</b><span>من <span id="t"></span> نقطة</span><div class="bar"><i id="bi"></i></div></div>
+<div id="list"></div>
+<h2>رد حضرتك</h2>
+<div class="btns"><button id="wa">ابعت ليوسف على واتساب</button><button class="ghost" id="copy">انسخ الرد</button></div>
+<textarea id="out" readonly aria-label="الرد"></textarea>
+<p class="small">الاختيارات بتتحفظ على الجهاز ده لو قفلت الصفحة ورجعتلها.</p>
+</div>
+<script>
+const DATA=[{"sec": "البراند والشكل", "id": "look", "t": "اتجاه الشكل", "c": "عملنا موك أبس مبدئية بالـ AI للتلات اتجاهات عشان نتخيل الشكل (للتخيل بس، مش التصميم النهائي).", "o": [{"l": "الماب بالأسعار", "d": "بيبيع ميزة: السعر واضح على الماب"}, {"l": "الباب", "d": "بيبيع إحساس: المالك صاحب القرار"}, {"l": "المفتاح", "d": "بيبيع ثقة: من المالك على طول"}, {"l": "الديزاينر يعمل الكافر بالتلاتة ونختار بعدها", "d": ""}], "rec": 3, "eng": false, "yp": 3, "links": [["الموك أبس بالأسود (اللي هنمشي عليها)", "https://drive.google.com/drive/folders/1MAMc_5oHltB0yUstTgNiBgJcvCd4rXU4?usp=sharing"], ["نفس الموك أبس بالكحلي (للمقارنة)", "https://drive.google.com/drive/folders/1YaLkJXU6zFEHF2kOSB3vyQZdnUR7y1sN?usp=sharing"]]}, {"sec": "البراند والشكل", "id": "colors", "t": "الألوان", "c": "اللوجو أسود (حرف H) ودهبي (الإطار). الموك أبس كانت كحلي في الأول، ويوسف حوّلها أسود عشان تمشي مع اللوجو.", "o": [{"l": "أسود + دهبي + أبيض مكسر بس", "d": "من اللوجو، والدهبي لمسة صغيرة"}, {"l": "نفس اللي فوق + لون مساعد يقترحه الديزاينر", "d": "زي الكحلي، ده قرار براند"}], "rec": 0, "eng": false, "yp": 0, "links": [["بالأسود", "https://drive.google.com/drive/folders/1MAMc_5oHltB0yUstTgNiBgJcvCd4rXU4?usp=sharing"], ["بالكحلي", "https://drive.google.com/drive/folders/1YaLkJXU6zFEHF2kOSB3vyQZdnUR7y1sN?usp=sharing"]]}, {"sec": "البراند والشكل", "id": "slogan", "t": "التاج لاين الثابت", "c": "", "o": [{"l": "منصة الأونرز / The Owners Platform", "d": ""}, {"l": "بيتك، وإعلانك بإيدك / Your home. Your listing.", "d": ""}, {"l": "من المالك ليك / From the owner, to you.", "d": ""}], "rec": 0, "eng": true, "yp": 0, "links": []}, {"sec": "البراند والشكل", "id": "coverlang", "t": "لغة الكافر", "c": "", "o": [{"l": "عربي على الصفحة الأساسية، وإنجليزي على الإنجليزي", "d": ""}, {"l": "عربي بس", "d": ""}, {"l": "إنجليزي بس", "d": ""}], "rec": 0, "eng": false, "yp": 1, "links": []}, {"sec": "الديزاينر", "id": "designer", "t": "مين يعمل الهوية؟", "c": "عبدالله مسعد: شغله قوي في البراندينج العربي، بس ملقيناش عنده شغل عقارات أو أبليكيشن. 3 طرق:", "o": [{"l": "أ) عبدالله: Finding style", "d": "يقترح ستايل من عنده: مود بورد + كافر بأسلوبه، ونشوف هو بيفكر إزاي"}, {"l": "ب) عبدالله: Merge his style with our brand", "d": "ياخد البريف والتلات اتجاهات ويدمج ستايله فيهم"}, {"l": "ج) مش عبدالله: فريلانسر تاني", "d": "نشترط: شغل عقارات أو أبليكيشن، عربي، تسليم على Canva"}], "rec": 1, "eng": true, "yp": 1, "links": []}, {"sec": "الديزاينر", "id": "trial", "t": "تاسك التجربة", "c": "", "o": [{"l": "أسبوع مدفوع بـ 3 تصميمات", "d": "كافر بالاتجاهات + كاروسيل متصل 5 صور + كافر ريل Homey News"}, {"l": "من غير تجربة، البريف الكامل على طول", "d": ""}], "rec": 0, "eng": true, "yp": 0, "links": []}, {"sec": "الصفحات والأكاونتات", "id": "pages", "t": "لغة صفحات الفيسبوك", "c": "Arabia عندها 56K، والإنجليزي 29K. الاتنين واقفين من 2018.", "o": [{"l": "أ) العربي بس، والإنجليزي تقف", "d": "مجهود واحد وكل التفاعل في مكان واحد"}, {"l": "ب) الاتنين بنفس المحتوى مترجم", "d": "المجهود الضعف"}, {"l": "ج) ندمج الصفحتين", "d": "ميتا بتشترط شروط، ومش مضمون"}], "rec": 0, "eng": true, "yp": 0, "links": []}, {"sec": "الصفحات والأكاونتات", "id": "rename", "t": "أسامي الصفحتين", "c": "اقتراح يوسف: Homey Links Arabia تبقى Homey Links، والإنجليزي تبقى Homey Links English.", "o": [{"l": "نغير الأسامي بس، واللينكات زي ما هي", "d": "العربي يفضل facebook.com/HomeyLinksArabia والإنجليزي facebook.com/HomeyLinks. مفيش مخاطرة"}, {"l": "نغير الأسامي ونبدّل اللينكات كمان", "d": "العربي ياخد /HomeyLinks. لازم نفضّي اليوزر من الإنجليزي الأول، وفي الوقت ده ممكن حد تاني ياخده"}], "rec": 0, "eng": true, "yp": null, "links": []}, {"sec": "الصفحات والأكاونتات", "id": "whatsapp", "t": "رقم الواتساب", "c": "", "o": [{"l": "رقم شركة جديد على WhatsApp Business", "d": "نفس الرقم في كل القنوات والموقع"}, {"l": "رقم موجود عندنا", "d": ""}], "rec": 0, "eng": true, "yp": 0, "links": []}, {"sec": "الصفحات والأكاونتات", "id": "old", "t": "المحتوى القديم (بوستات 2018 وThreads)", "c": "", "o": [{"l": "نأرشفه أو نخفيه", "d": "ومانمسحش حاجة غير بموافقة البشمهندس"}, {"l": "نمسحه", "d": ""}], "rec": 0, "eng": true, "yp": 0, "links": []}, {"sec": "الصفحات والأكاونتات", "id": "xsnap", "t": "X وSnapchat", "c": "", "o": [{"l": "نحجز الاسم homeylinks من دلوقتي", "d": "حتى لو مش هننزل عليهم"}, {"l": "مش دلوقتي", "d": ""}], "rec": 0, "eng": false, "yp": 0, "links": []}, {"sec": "الدومين", "id": "domain", "t": "الدومين", "c": "", "o": [{"l": "homeylinks.com الأساسي، ونحجز .com.eg يحوّل عليه", "d": "أول ما السجل التجاري يجهز"}, {"l": "نقلب على .com.eg كأساسي", "d": ""}], "rec": 0, "eng": true, "yp": 0, "links": []}, {"sec": "المحتوى", "id": "excel", "t": "تعديلات الكاتيجوريز في خطة المحتوى", "c": "جولة الكمبوند وفيديو الميكس (مصطفى برّه + ريهام جوه) يتأجلوا، و\"Educational\" اسم داخلي بس، وAsk Homey AI سلسلة أسبوعية مش لازم تبقى في دقيقة.", "o": [{"l": "موافق على التعديلات كلها", "d": ""}, {"l": "عندي تعديل", "d": "اكتبه في الملاحظة"}], "rec": 0, "eng": false, "yp": 0, "links": []}];const KEY='homey-eng-decisions-v1';
+let S={};try{S=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){S={}}
+DATA.forEach(d=>{if(!S[d.id])S[d.id]={pick:null,note:''}});
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const list=document.getElementById('list');let sec='';
+DATA.forEach(d=>{
+ if(d.sec!==sec){sec=d.sec;const h=document.createElement('h2');h.textContent=sec;list.appendChild(h)}
+ const el=document.createElement('div');el.className='item';el.id='it-'+d.id;
+ const yp=d.yp===null?'<div class="yp">يوسف لسه ماحددش، ومحتاج رأي حضرتك.</div>':`<div class="yp">اختيار يوسف: <b>${d.o[d.yp].l}</b></div>`;
+ el.innerHTML=`<h3>${d.t}</h3>${d.c?`<div class="ctx">${d.c}</div>`:''}${d.links.length?`<div class="links">${d.links.map(l=>`<a href="${l[1]}" target="_blank" rel="noopener">${l[0]} ↗</a>`).join('')}</div>`:''}${yp}
+ ${d.yp!==null?`<div class="btns" style="margin:0 0 8px"><button class="ghost agree" type="button">موافق على اختيار يوسف</button></div>`:''}
+ <div class="opts" role="radiogroup" aria-label="${d.t}"></div><input class="note" type="text" placeholder="ملاحظة (اختياري)" aria-label="ملاحظة على ${d.t}">`;
+ const box=el.querySelector('.opts');
+ d.o.forEach((o,i)=>{const l=document.createElement('label');l.className='opt';
+  l.innerHTML=`<input type="radio" name="r-${d.id}" value="${i}"><span><b>${o.l}</b>${i===d.yp?'<span class="tagY">اختيار يوسف</span>':''}${o.d?`<small>${o.d}</small>`:''}</span>`;box.appendChild(l)});
+ box.addEventListener('change',e=>{S[d.id].pick=+e.target.value;save();paint()});
+ const ag=el.querySelector('.agree');if(ag)ag.onclick=()=>{S[d.id].pick=d.yp;save();paint()};
+ const nt=el.querySelector('.note');nt.addEventListener('input',()=>{S[d.id].note=nt.value;save();sum()});
+ list.appendChild(el)});
+function paint(){let n=0;DATA.forEach(d=>{const s=S[d.id],el=document.getElementById('it-'+d.id);
+ el.querySelectorAll('.opt').forEach((l,i)=>{l.querySelector('input').checked=s.pick===i;l.classList.toggle('sel',s.pick===i)});
+ el.querySelector('.note').value=s.note||'';el.classList.toggle('done',s.pick!==null);if(s.pick!==null)n++});
+ document.getElementById('n').textContent=n;document.getElementById('t').textContent=DATA.length;document.getElementById('bi').style.width=(n/DATA.length*100)+'%';sum()}
+function sum(){let t='رد البشمهندس أحمد على قرارات Homey:\n';
+ DATA.forEach((d,i)=>{const s=S[d.id];let v=s.pick===null?'(لسه)':d.o[s.pick].l;if(s.pick!==null&&s.pick===d.yp)v+=' ✓ موافق على اختيار يوسف';t+=`\n${i+1}. ${d.t}: ${v}${s.note?'\n   ملاحظة: '+s.note:''}`});
+ document.getElementById('out').value=t}
+document.getElementById('agreeAll').onclick=()=>{DATA.forEach(d=>{if(d.yp!==null&&S[d.id].pick===null)S[d.id].pick=d.yp});save();paint()};
+document.getElementById('wa').onclick=()=>{window.open('https://wa.me/?text='+encodeURIComponent(document.getElementById('out').value),'_blank','noopener')};
+document.getElementById('copy').onclick=async e=>{const o=document.getElementById('out');try{await navigator.clipboard.writeText(o.value)}catch(_){o.select();document.execCommand('copy')}e.target.textContent='اتنسخ ✓';setTimeout(()=>e.target.textContent='انسخ الرد',1500)};
+paint();
+</script></body></html>
